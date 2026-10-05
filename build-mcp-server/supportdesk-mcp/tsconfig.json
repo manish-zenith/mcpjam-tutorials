@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "types": [
+            "node"
+        ],
+        "skipLibCheck": true
+    }
+}
