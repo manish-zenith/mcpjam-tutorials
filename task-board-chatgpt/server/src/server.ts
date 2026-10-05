@@ -1,6 +1,7 @@
 // MCP server definition for the task board ChatGPT App: data tools
-// (list_tasks, complete_task), the render tool (show_task_board), and the
-// UI resource that serves the bundled web component.
+// (list_tasks, complete_task), the render tool (show_task_board), the plugin
+// extension entrypoint (open_task_board), and the UI resource that serves the
+// bundled web component.
 import { McpServer } from "@modelcontextprotocol/server";
 import {
   registerAppResource,
@@ -92,6 +93,7 @@ export function createServer() {
   );
 
   registerRenderTool(server);
+  registerEntrypointTool(server);
   registerWidget(server);
   return server;
 }
@@ -117,6 +119,39 @@ function registerRenderTool(server: McpServer) {
       },
     },
     async ({ tasks }) => ({
+      structuredContent: { tasks },
+      content: [{ type: "text", text: `Showing ${tasks.length} tasks.` }],
+    })
+  );
+}
+
+// Plugin extension entrypoint: lets users open the board from ChatGPT's
+// sidebar or as a panel beside a conversation, without the model.
+function registerEntrypointTool(server: McpServer) {
+  server.registerTool(
+    "open_task_board",
+    {
+      // The label users see in the sidebar and on the panel tab.
+      title: "My tasks",
+      description: "Open the task board from the sidebar or a conversation panel.",
+      // Entrypoints always open with {} as the arguments.
+      inputSchema: z.object({}),
+      outputSchema: TaskListSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
+      _meta: {
+        // "app" hides the tool from the model, so it keeps calling list_tasks,
+        // then show_task_board. ChatGPT ignores this when opening an entrypoint.
+        ui: { resourceUri: WIDGET_URI, visibility: ["app"] },
+        "openai/ui": {
+          entrypoints: [{ type: "global" }, { type: "thread" }],
+        },
+      },
+    },
+    async () => ({
       structuredContent: { tasks },
       content: [{ type: "text", text: `Showing ${tasks.length} tasks.` }],
     })

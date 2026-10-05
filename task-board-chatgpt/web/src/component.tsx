@@ -1,6 +1,7 @@
 // Task board UI component. Renders tool results delivered over the MCP Apps
-// bridge (JSON-RPC over postMessage), calls complete_task via tools/call, and
-// keeps the selected row in ChatGPT widget state when available.
+// bridge (JSON-RPC over postMessage), calls complete_task via tools/call, keeps
+// the selected row in ChatGPT widget state when available, and shares the
+// selected task with the model via ui/update-model-context.
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -79,6 +80,12 @@ function TaskBoard() {
   function select(id: string) {
     setSelectedId(id);
     window.openai?.setWidgetState?.({ selectedId: id });
+
+    const task = tasks.find((t) => t.id === id);
+    if (!task) return;
+    request("ui/update-model-context", {
+      content: [{ type: "text", text: `Selected task: "${task.title}" (id ${task.id})` }],
+    }).catch((error) => console.warn("Couldn't update model context", error));
   }
 
   async function complete(id: string) {
