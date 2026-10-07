@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "esbuild src/component.tsx --bundle --format=esm --jsx=automatic --minify --outfile=dist/component.js"
+    "build": "esbuild src/component.tsx src/csv-viewer.ts --bundle --format=esm --jsx=automatic --minify --outdir=dist"
   },
   "keywords": [],
   "author": "",
