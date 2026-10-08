@@ -3,6 +3,7 @@
 // UI resource that serves the bundled web component. Also a CSV image viewer:
 // a .csv file viewer extension (open_csv_file), a model-callable version
 // (show_csv_image), its UI resource, and the task list as a CSV resource.
+// MCP Events (task.completed) live in events.ts.
 import { McpServer } from "@modelcontextprotocol/server";
 import {
   registerAppResource,
@@ -10,6 +11,7 @@ import {
 } from "@modelcontextprotocol/ext-apps/server";
 import { readFileSync } from "node:fs";
 import { z } from "zod";
+import { emitTaskCompleted, registerEvents } from "./events.js";
 
 const WIDGET_URI = "ui://task-board/v1.html";
 const CSV_VIEWER_URI = "ui://task-board/csv-viewer-v1.html";
@@ -87,7 +89,12 @@ export function createServer() {
           content: [{ type: "text", text: `No task found with id ${taskId}.` }],
         };
       }
-      task.done = true;
+      // Only a change from open to done is an event, so repeat calls don't
+      // notify subscribers twice.
+      if (!task.done) {
+        task.done = true;
+        emitTaskCompleted(task);
+      }
       return {
         structuredContent: { tasks },
         content: [{ type: "text", text: `Marked "${task.title}" as done.` }],
@@ -102,6 +109,8 @@ export function createServer() {
   registerCsvImageTool(server);
   registerCsvViewerResource(server);
   registerTasksCsvResource(server);
+
+  registerEvents(server);
   return server;
 }
 

@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "tsx src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "webhook-receiver": "tsx scripts/webhook-receiver.ts"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +17,7 @@
     "@modelcontextprotocol/node": "^2.1.0",
     "@modelcontextprotocol/server": "^2.1.0",
     "express": "^5.2.1",
+    "standardwebhooks": "^1.1.1",
     "zod": "^4.6.5"
   },
   "devDependencies": {
