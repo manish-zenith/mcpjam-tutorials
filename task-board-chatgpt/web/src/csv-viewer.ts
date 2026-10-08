@@ -86,7 +86,8 @@ async function loadTable(args: any): Promise<Table> {
     return { name: args.file.name, rows: parseCsv(text) };
   }
   if (typeof args?.csv === "string") {
-    return { name: typeof args.name === "string" ? args.name : undefined, rows: parseCsv(args.csv) };
+    const csv = /[\r\n]/.test(args.csv) ? args.csv : args.csv.replaceAll("\\n", "\n");
+    return { name: typeof args.name === "string" ? args.name : undefined, rows: parseCsv(csv) };
   }
   throw new Error("expected an opened file or CSV text");
 }
@@ -170,7 +171,7 @@ function show(table: Table) {
     root.append(
       caption(
         `Showing the first ${Math.min(body.length, MAX_ROWS)} of ${body.length} rows ` +
-          `and ${Math.min(columns, MAX_COLUMNS)} of ${columns} columns.`
+        `and ${Math.min(columns, MAX_COLUMNS)} of ${columns} columns.`
       )
     );
   }
